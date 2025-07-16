@@ -40,7 +40,7 @@
 
 **View 2 (Portrait)**  
 > Compact centered style, great for minimal embeds.
-> ![Portrait](https://cdn.discordapp.com/attachments/959107867036774420/1395047676285812736/image.png?ex=687906e4&is=6877b564&hm=a0fca1fce8495d9ba9b611f707cd974ce27e531950e71667510b421f34f2a869&)
+> ![Portrait](https://cdn.discordapp.com/attachments/959107867036774420/1395047769718128692/image.png?ex=687906fb&is=6877b57b&hm=86ed3432870bc21de069af9080983a687a193d09a142b697f8398612e2146fde&)
 
 ---
 

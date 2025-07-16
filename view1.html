@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spotify Now Playing</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: #121212;
+      color: white;
+    }
+    .now-playing {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      width: 500px;
+      background: #181818;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .cover {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      margin-right: 15px;
+    }
+    .info {
+      flex: 1;
+      overflow: hidden;
+    }
+    .track {
+      font-size: 1.1em;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .artist {
+      color: #bbb;
+      font-size: 0.9em;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status {
+      font-size: 0.8em;
+      color: #1db954;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="now-playing" id="widget">
+    <p>Loading...</p>
+  </div>
+
+  <script>
+    const CLIENT_ID = "SPOTiFY_CLIENT_ID"; // Replace with your actual client ID
+    const CLIENT_SECRET = "SPOTiFY_CLIENT_SECRET"; // Replace with your actual client secret
+    const REFRESH_TOKEN = "SPOTIFY_REFRESH_TOKEN"; // Replace with your actual refresh token
+
+    async function getAccessToken() {
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: "Basic " + btoa(`${CLIENT_ID}:${CLIENT_SECRET}`),
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: REFRESH_TOKEN,
+        }),
+      });
+      const data = await res.json();
+      return data.access_token;
+    }
+
+    async function getNowPlaying() {
+      const token = await getAccessToken();
+
+      const res = await fetch(
+        "https://api.spotify.com/v1/me/player/currently-playing",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.status === 204) {
+        document.getElementById("widget").innerHTML = `
+          <div class="now-playing">
+            <div class="info">
+              <div class="track">Nothing playing</div>
+              <div class="artist">Spotify is idle 🎧</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const data = await res.json();
+      const track = data.item.name;
+      const artist = data.item.artists.map((a) => a.name).join(", ");
+      const albumArt = data.item.album.images[0].url;
+      const isPlaying = data.is_playing ? "▶️ Playing" : "⏸️ Paused";
+
+      document.getElementById("widget").innerHTML = `
+        <div class="now-playing">
+          <img src="${albumArt}" class="cover" />
+          <div class="info">
+            <div class="track">${track}</div>
+            <div class="artist">${artist}</div>
+            <div class="status">${isPlaying}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    getNowPlaying();
+    setInterval(getNowPlaying, 15000); // refresh every 15 sec
+  </script>
+</body>
+</html>

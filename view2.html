@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spotify Now Playing</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    img {
+      width: 150px;
+      border-radius: 8px;
+    }
+    #track {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+    #artist {
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎵 Now Playing</h2>
+  <div id="widget">
+    <p>Loading...</p>
+  </div>
+
+  <script>
+    const CLIENT_ID = "SPOTiFY_CLIENT_ID"; // Replace with your actual client ID
+    const CLIENT_SECRET = "SPOTiFY_CLIENT_SECRET"; // Replace with your actual client secret
+    const REFRESH_TOKEN = "SPOTIFY_REFRESH_TOKEN"; // Replace with your actual refresh token
+
+    async function getAccessToken() {
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization:
+            "Basic " +
+            btoa(`${CLIENT_ID}:${CLIENT_SECRET}`),
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: REFRESH_TOKEN,
+        }),
+      });
+      const data = await res.json();
+      return data.access_token;
+    }
+
+    async function getNowPlaying() {
+      const token = await getAccessToken();
+
+      const res = await fetch(
+        "https://api.spotify.com/v1/me/player/currently-playing",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.status === 204) {
+        document.getElementById("widget").innerHTML =
+          "<p>Nothing is playing right now 🎧</p>";
+        return;
+      }
+
+      const data = await res.json();
+      const track = data.item.name;
+      const artist = data.item.artists.map((a) => a.name).join(", ");
+      const albumArt = data.item.album.images[0].url;
+
+      document.getElementById("widget").innerHTML = `
+        <img src="${albumArt}" alt="Album Art" />
+        <div id="track">${track}</div>
+        <div id="artist">${artist}</div>
+      `;
+    }
+
+    getNowPlaying();
+    setInterval(getNowPlaying, 15000); // refresh every 15 sec
+  </script>
+</body>
+</html>
